@@ -15,6 +15,4 @@ struct command {
   command_code_t code;
 };
 
-#define CMD_SIZE (sizeof(command_code_t) + sizeof(struct command))
-
 #endif // COMMAND_H
