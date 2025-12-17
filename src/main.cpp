@@ -25,6 +25,7 @@ struct command {
 
 #define CMD_SIZE (sizeof(CMD_START) + sizeof(struct command))
 
+// Connect or disconnect a specific pin.
 void connect_pin(int pin, bool state) {
   if (state) {
     // Pull pin LOW
@@ -36,6 +37,7 @@ void connect_pin(int pin, bool state) {
   }
 }
 
+// Disconnect all pins
 void reset_pins() {
   for (size_t i = 0; i < NUM_PINS; i++) {
     connect_pin(pins[i], false);
@@ -47,30 +49,33 @@ void setup() {
   Serial.begin(115200);
 }
 
+// Block until a valid command struct has been read.
 void wait_for_command(struct command *cmd) {
   size_t i = 0;
   bool cmd_started = false;
-  while (i < sizeof(*cmd)) {
-    if (!Serial.available())
-      continue;
 
+  while (i < sizeof(*cmd)) {
+    // Continuously read bytes until a valid command structure is received
+    while (!Serial.available()) {}
     uint8_t c = Serial.read();
 
+    // Always restart parsing if start code is received
     if (c == CMD_START) {
       i = 0;
       cmd_started = true;
       continue;
     }
 
+    // Drop bytes if not in a valid command
     if (!cmd_started)
       continue;
 
     reinterpret_cast<uint8_t*>(cmd)[i] = c;
-
     i++;
   }
 }
 
+// Do the operation requested by the command.
 void handle_command(struct command *cmd) {
   reset_pins();
   switch (cmd->state) {
