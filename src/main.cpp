@@ -1,12 +1,8 @@
 #include <Arduino.h>
+#include "command.h"
 
 // Wait this long after setting a pin to allow the connection to settle
 #define BUTTON_DELAY_MS 500
-
-#define CMD_START 255
-#define CMD_RESET 0
-#define CMD_RECOVERY 1
-#define CMD_POWER 2
 
 #define PIN_RESET 7
 #define PIN_RECOVERY 8
@@ -18,12 +14,6 @@ static const int pins[] = {
   PIN_POWER
 };
 #define NUM_PINS (sizeof(pins) / sizeof(pins[0]))
-
-struct command {
-  uint8_t state;
-};
-
-#define CMD_SIZE (sizeof(CMD_START) + sizeof(struct command))
 
 // Connect or disconnect a specific pin.
 void connect_pin(int pin, bool state) {
@@ -78,7 +68,7 @@ void wait_for_command(struct command *cmd) {
 // Do the operation requested by the command.
 void handle_command(struct command *cmd) {
   reset_pins();
-  switch (cmd->state) {
+  switch (cmd->code) {
     case CMD_RESET:
       connect_pin(PIN_RESET, true);
       delay(BUTTON_DELAY_MS);
